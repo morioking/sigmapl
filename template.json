@@ -1,0 +1,28 @@
+{
+    "nodes": [
+        {
+            "color": "rgb(255,204,102)", 
+            "label": "A node", 
+            "y": 0, 
+            "x": 0, 
+            "id": "n0", 
+            "size": 3
+        }, 
+        {
+            "color": "rgb(0,255,0)", 
+            "label": "Another node", 
+            "y": 1, 
+            "x": 3, 
+            "id": "n1", 
+            "size": 2
+        }
+    ],
+    "edges": [
+        {
+            "color": "rgb(128,128,128)", 
+            "source": "n0", 
+            "id": "e0", 
+            "target": "n1"
+        }
+    ]
+}
