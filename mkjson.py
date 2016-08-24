@@ -10,6 +10,19 @@ import random
 jsondata = []
 playlist = []
 jsonout = []
+nodeclasses = []
+edgeclasses = []
+
+
+class NodeClass:
+	def __init__(self):
+		self._label = ""
+
+	def setLabel(self, label):
+		self._label = label
+		
+	def getLabel(self):
+		return self._label
 
 if __name__ == "__main__":
 
@@ -94,10 +107,13 @@ if __name__ == "__main__":
 	print "------------------jsonout------------------"
 	print json.dumps(jsonout, indent = 4)
 
-	f = open ("data.json", "w")
-	json.dump(jsonout, f)
-	f.close()
+	# f = open ("data.json", "w")
+	# json.dump(jsonout, f)
+	# f.close()
 
+	cl = NodeClass()
+	cl.setLabel("hogehoge")
+	print cl.getLabel()
 
 	# comment no sample
 	# print json.dumps(jsondata["nodes"], sort_keys = True, indent = 4)
