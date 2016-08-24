@@ -8,15 +8,15 @@ import copy
 import random
 
 jsondata = []
-playlist = []
+labels = []
 jsonout = []
 nodeclasses = []
 edgeclasses = []
 
 class NodeClass:
-	def __init__(self):
+	def __init__(self, label):
 		self._color = "rgb(0,255,0)"
-		self._label = ""
+		self._label = label
 		self._y = 0
 		self._x = 0
 		self._id = ""
@@ -50,6 +50,9 @@ class NodeClass:
 	def setIsNew(self, isNew):
 		self._isNew = isNew
 
+	def getIsNew(self):
+		return self._isNew
+
 if __name__ == "__main__":
 
 	print ""
@@ -58,7 +61,7 @@ if __name__ == "__main__":
 
 	# param = sys.argv
 	# file1 = param[1]
-	# print "import playlist file is",file1
+	# print "import labels file is",file1
 
 	# load json data
 	f = open("data.json", "r")
@@ -71,51 +74,57 @@ if __name__ == "__main__":
 	f = open("test.m3u8", "r")
 	for line in f:
 		if re.match("#EXTINF",line):
-			playlist.append(re.sub("#EXTINF(.*[,])","",line))
+			labels.append(re.sub("#EXTINF(.*[,])","",line))
 	f.close()
 
-	# making nodes
+	# making NodeClass and nodeclasses
 	new_node_id = len(jsondata["nodes"]) - 1
-	for song in playlist:
+	nodeclasses_idx = 0
+	for label in labels:
 		isHit = False
 		idxHit = 0
 		node_size = 1
-		print "searching ", song.strip(), "from data.json...."
+		nodeclasses.append(NodeClass(label.strip()))
+		print "searching ", label.strip(), "from data.json...."
 		for i in range(len(jsondata["nodes"])):
-			# print "  compairing ", song.strip(), "VS", jsondata["nodes"][i]["label"], song.find(jsondata["nodes"][i]["label"])
-			if song.find(jsondata["nodes"][i]["label"]) == 0:
-				#hit
+			# print "  compairing ", label.strip(), "VS", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
+			if label.find(jsondata["nodes"][i]["label"]) == 0:
+				# hit
 				isHit = True
 				idxHit = i
 				break
-			elif song.find(jsondata["nodes"][i]["label"]) == -1:
+			elif label.find(jsondata["nodes"][i]["label"]) == -1:
 				# not-hit
 				isHit = False
 			else:
 				print "unknown hit"
 
-		if isHit == True:
-			print "    search result.... isHit = ", isHit, "make the size of the node bigger"
-			node_size = jsondata["nodes"][idxHit]["size"]
-			node_id = jsondata["nodes"][idxHit]["id"]
-			posx = int(random.random()*10)
-			posy = int(random.random()*10)
-			# print "      -> the size of index is", node_size
-			# print "      -> the id of index is", node_id
-			jsonout["nodes"][idxHit]["size"] = node_size + 1
-			jsonout["nodes"][idxHit]["x"] = posx
-			jsonout["nodes"][idxHit]["y"] = posy
+		nodeclasses[nodeclasses_idx].setIsNew = not(isHit)
 
-		if isHit == False:
-			print "    search result.... isHit = ", isHit, "make new node..."
-			new_node_id += 1
-			color = "rgb(0,0,255)"
-			label = song.strip()
-			identfy = "n"+str(new_node_id)
-			posx = int(random.random()*10)
-			posy = int(random.random()*10)
-			node_size = 1
-			jsonout["nodes"].append({"color":color, "label":label, "x":posx, "y":posy, "id":identfy, "size":node_size})
+	# making 
+
+		# if isHit == True:
+		# 	print "    search result.... isHit = ", isHit, "make the size of the node bigger"
+		# 	node_size = jsondata["nodes"][idxHit]["size"]
+		# 	node_id = jsondata["nodes"][idxHit]["id"]
+		# 	posx = int(random.random()*10)
+		# 	posy = int(random.random()*10)
+		# 	# print "      -> the size of index is", node_size
+		# 	# print "      -> the id of index is", node_id
+		# 	jsonout["nodes"][idxHit]["size"] = node_size + 1
+		# 	jsonout["nodes"][idxHit]["x"] = posx
+		# 	jsonout["nodes"][idxHit]["y"] = posy
+
+		# if isHit == False:
+		# 	print "    search result.... isHit = ", isHit, "make new node..."
+		# 	new_node_id += 1
+		# 	color = "rgb(0,0,255)"
+		# 	label = label.strip()
+		# 	identfy = "n"+str(new_node_id)
+		# 	posx = int(random.random()*10)
+		# 	posy = int(random.random()*10)
+		# 	node_size = 1
+		# 	jsonout["nodes"].append({"color":color, "label":label, "x":posx, "y":posy, "id":identfy, "size":node_size})
 
 	# making edges
 
@@ -138,10 +147,10 @@ if __name__ == "__main__":
 	# f.close()
 
 
-	nodeclasses.append(NodeClass())
-	cl = nodeclasses[0]
-	cl.setLabel("hogehoge")
-	print cl.getLabel(), cl.getSize()
+	# nodeclasses.append(NodeClass())
+	#cl = nodeclasses[0]
+	# cl.setLabel("hogehoge")
+	print nodeclasses[0].getLabel(), nodeclasses[0].getIsNew()
 
 
 	# comment no sample
@@ -154,9 +163,9 @@ if __name__ == "__main__":
 
 	# for i in range(len(jsondata["nodes"])):
 	# 	hit_index = 0
-	# 	for song in playlist:
-	# 		print "compair ", song.strip(), "with", jsondata["nodes"][i]["label"], song.find(jsondata["nodes"][i]["label"])
-	# 		if song.find(jsondata["nodes"][i]["label"]) != -1:
+	# 	for label in labels:
+	# 		print "compair ", label.strip(), "with", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
+	# 		if label.find(jsondata["nodes"][i]["label"]) != -1:
 	# 			hit_index = i
 	# 	if hit_index == 0:
 	# 		#not hit
@@ -214,5 +223,5 @@ if __name__ == "__main__":
 
 	print ""
 	print "finish mixing!!"
-	# print "the mixed playlist file is",file3
+	# print "the mixed labels file is",file3
 	# print ""
