@@ -13,16 +13,42 @@ jsonout = []
 nodeclasses = []
 edgeclasses = []
 
-
 class NodeClass:
 	def __init__(self):
+		self._color = "rgb(0,255,0)"
 		self._label = ""
+		self._y = 0
+		self._x = 0
+		self._id = ""
+		self._size = 1
+		self._isNew = False
 
 	def setLabel(self, label):
 		self._label = label
 		
 	def getLabel(self):
 		return self._label
+
+	def setX(self, x):
+		self._x = x
+
+	def setY(self, y):
+		self._y = y
+
+	def setColor(self, color):
+		self._color = color
+
+	def setId(self, id):
+		self._id = id
+		
+	def setSize(self, size):
+		self._size = size
+	
+	def getSize(self):
+		return self._size
+		
+	def setIsNew(self, isNew):
+		self._isNew = isNew
 
 if __name__ == "__main__":
 
@@ -111,9 +137,12 @@ if __name__ == "__main__":
 	# json.dump(jsonout, f)
 	# f.close()
 
-	cl = NodeClass()
+
+	nodeclasses.append(NodeClass())
+	cl = nodeclasses[0]
 	cl.setLabel("hogehoge")
-	print cl.getLabel()
+	print cl.getLabel(), cl.getSize()
+
 
 	# comment no sample
 	# print json.dumps(jsondata["nodes"], sort_keys = True, indent = 4)
