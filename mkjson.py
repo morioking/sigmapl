@@ -105,10 +105,6 @@ class EdgeClass:
 		
 if __name__ == "__main__":
 
-	print ""
-	print "start mixing..."
-	print ""
-
 	# param = sys.argv
 	# file1 = param[1]
 	# print "import labels file is",file1
@@ -123,9 +119,12 @@ if __name__ == "__main__":
 	# load m3u8
 	f = open("test.m3u8", "r")
 	for line in f:
+		print "import m3u8....", line.strip()
 		if re.match("#EXTINF",line):
-			labels.append(re.sub("#EXTINF(.*[,])","",line))
+			labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
 	f.close()
+
+	print "labels", labels
 
 	# making NodeClass and nodeclasses
 	new_node_id = len(jsondata["nodes"]) - 1
@@ -134,10 +133,9 @@ if __name__ == "__main__":
 		isHit = False
 		idxHit = 0
 		node_size = 1
-		nodeclasses.append(NodeClass(label.strip()))
-		print "searching ", label.strip(), "from data.json...."
+		nodeclasses.append(NodeClass(label))
 		for i in range(len(jsondata["nodes"])):
-			# print "  compairing ", label.strip(), "VS", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
+			# print "  compairing ", label, "VS", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
 			if label.find(jsondata["nodes"][i]["label"]) == 0:
 				# hit
 				isHit = True
@@ -149,51 +147,78 @@ if __name__ == "__main__":
 			else:
 				print "unknown hit"
 
-		nodeclasses[nodeclasses_idx].setIsNew = not(isHit)
+		nodeclasses[nodeclasses_idx].setIsNew(not(isHit))
 		if isHit:
 			id = jsondata["nodes"][idxHit]["id"]
+			posx = random.uniform(-1,1)
+			posy = random.uniform(-1,1)
+			size = jsondata["nodes"][idxHit]["size"] + 1
+			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
 		else:
+			new_node_id += 1
 			id = "n"+str(new_node_id)
+			posx = random.uniform(-1,1)
+			posy = random.uniform(-1,1)
+			size = 1
+			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+
 		nodeclasses[nodeclasses_idx].setId(id)
-		
+		nodeclasses[nodeclasses_idx].setX(posx)
+		nodeclasses[nodeclasses_idx].setY(posy)
+		nodeclasses[nodeclasses_idx].setSize(size)
+		nodeclasses[nodeclasses_idx].setColor(color)
 		nodeclasses_idx += 1
-		
+
 	# making EdgeClass and edgeclasses
 	for i in range(len(nodeclasses)-1):
 		source = nodeclasses[i].getId()
 		target = nodeclasses[i+1].getId()
-		
-		print "source", source, " target", target
-	
-	
-		# if isHit == True:
-		# 	print "    search result.... isHit = ", isHit, "make the size of the node bigger"
-		# 	node_size = jsondata["nodes"][idxHit]["size"]
-		# 	node_id = jsondata["nodes"][idxHit]["id"]
-		# 	posx = int(random.random()*10)
-		# 	posy = int(random.random()*10)
-		# 	# print "      -> the size of index is", node_size
-		# 	# print "      -> the id of index is", node_id
-		# 	jsonout["nodes"][idxHit]["size"] = node_size + 1
-		# 	jsonout["nodes"][idxHit]["x"] = posx
-		# 	jsonout["nodes"][idxHit]["y"] = posy
+		ec = EdgeClass()
+		ec.setSource(source)
+		ec.setTarget(target)
+		edgeclasses.append(ec)
 
-		# if isHit == False:
-		# 	print "    search result.... isHit = ", isHit, "make new node..."
-		# 	new_node_id += 1
-		# 	color = "rgb(0,0,255)"
-		# 	label = label.strip()
-		# 	identfy = "n"+str(new_node_id)
-		# 	posx = int(random.random()*10)
-		# 	posy = int(random.random()*10)
-		# 	node_size = 1
-		# 	jsonout["nodes"].append({"color":color, "label":label, "x":posx, "y":posy, "id":identfy, "size":node_size})
+	# search isNew for EdgeClass
+	new_edge_id = len(jsondata["edges"]) - 1
+	for ec in edgeclasses:
+		isHit = False
+		source = ec.getSource()
+		target = ec.getTarget()
+		for i in range(len(jsondata["edges"])):
+			if (jsondata["edges"][i]["source"] == source) and (jsondata["edges"][i]["target"] == target):
+				isHit = True
+				break
+			else:
+				isHit = False
 
-	# making edges
+		#print "edge",isHit
+		ec.setIsNew(not(isHit))
+		if isHit:
+			id = jsondata["edges"][i]["id"]
+		else:
+			new_edge_id += 1
+			id = "e"+str(new_edge_id)
+
+		ec.setId(id)
 
 
-	
-	# search edges
+	# update jsonout for node
+	for nc in nodeclasses:
+		if nc.getIsNew():
+			jsonout["nodes"].append({"color":nc.getColor(), "label":nc.getLabel(), "y":nc.getY(), "x":nc.getX(), "id":nc.getId(), "size":nc.getSize()})
+		else:
+			for i in range(len(jsondata["nodes"])):
+				if jsondata["nodes"][i]["id"] == nc.getId():
+					jsonout["nodes"][i]["color"] = nc.getColor()
+					jsonout["nodes"][i]["x"] = nc.getX()
+					jsonout["nodes"][i]["y"] = nc.getY()
+					jsonout["nodes"][i]["size"] = nc.getSize()
+
+
+	# update jsonout for edge
+	for ec in edgeclasses:
+		if ec.getIsNew():
+			jsonout["edges"].append({"color":ec.getColor(), "source":ec.getSource(), "id":ec.getId(), "target":ec.getTarget()})
 
 
 	print "------------------jsondata------------------"
@@ -201,87 +226,14 @@ if __name__ == "__main__":
 	print "------------------jsonout------------------"
 	print json.dumps(jsonout, indent = 4)
 
+
+	# for nc in nodeclasses:
+	# 	print nc.getLabel(), nc.getIsNew(), nc.getX(), nc.getY(), nc.getColor(), nc.getId()
+
+	# for ec in edgeclasses:
+	# 	print ec.getColor(), ec.getSource(), ec.getId(), ec.getTarget(), ec.getIsNew()
+
 	# f = open ("data.json", "w")
 	# json.dump(jsonout, f)
 	# f.close()
 
-
-
-	for nc in nodeclasses:
-		print nc.getLabel(), nc.getIsNew(), nc.getX(), nc.getY(), nc.getColor(), nc.getId()
-
-	ec = EdgeClass()
-	print ec.getColor(), ec.getSource(), ec.getId(), ec.getTarget(), ec.getIsNew()
-
-	# comment no sample
-	# print json.dumps(jsondata["nodes"], sort_keys = True, indent = 4)
-	# print len(jsondata["nodes"])
-	# print json.dumps(jsondata, sort_keys = True, indent = 4)
-	# print json.dumps(jsondata["nodes"][0]["color"], indent = 4)
-	# print jsondata["nodes"][1]
-
-
-	# for i in range(len(jsondata["nodes"])):
-	# 	hit_index = 0
-	# 	for label in labels:
-	# 		print "compair ", label.strip(), "with", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
-	# 		if label.find(jsondata["nodes"][i]["label"]) != -1:
-	# 			hit_index = i
-	# 	if hit_index == 0:
-	# 		#not hit
-	# 		print "not hit"
-	# 	else:
-	# 		#hit
-	# 		print "hit"
-
-	# f = open(file1,"r")
-	# i = 0
-	# for line in f:
-	# 	# first line EXTM3U skipped
-	# 	if i != 0:
-	# 		list_a.append(line)
-	# 	elif i == 0:
-	# 		header = line
-	# 	i += 1
-	# f.close()
-
-	# f = open(file2,"r")
-	# i = 0
-	# for line in f:
-	# 	# first line EXTM3U skipped
-	# 	if i != 0:
-	# 		list_b.append(line)
-	# 	i += 1
-	# f.close()
-
-	# # import pdb; pdb.set_trace()
-	# idx_a = 0
-	# idx_b = 0
-	# while idx_a < len(list_a):
-	# 	if idx_a != len(list_a):
-	# 		list_c.append(list_a[idx_a])
-	# 		idx_a += 1
-	# 	if idx_a != len(list_a):
-	# 		list_c.append(list_a[idx_a])
-	# 		idx_a += 1
-	# 	if idx_b != len(list_b):
-	# 		list_c.append(list_b[idx_b])
-	# 		idx_b += 1
-	# 	if idx_b != len(list_b):
-	# 		list_c.append(list_b[idx_b])
-	# 		idx_b += 1
-
-	# list_c.insert(0, header)
-
-	# tdatetime = dt.now()
-	# tstr = tdatetime.strftime('%Y-%m-%d')
-	# file3 = "MIXED HISTORY_"+tstr+".m3u8"
-	# f = open(file3, "w")
-	# for line in list_c:
-	# 	f.write(line)
-	# f.close()
-
-	print ""
-	print "finish mixing!!"
-	# print "the mixed labels file is",file3
-	# print ""
