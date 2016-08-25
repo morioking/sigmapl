@@ -31,16 +31,28 @@ class NodeClass:
 
 	def setX(self, x):
 		self._x = x
-
+	
+	def getX(self):
+		return self._x
+		
 	def setY(self, y):
 		self._y = y
 
+	def getY(self):
+		return self._y
+		
 	def setColor(self, color):
 		self._color = color
 
+	def getColor(self):
+		return self._color
+
 	def setId(self, id):
 		self._id = id
-		
+	
+	def getId(self):
+		return self._id
+
 	def setSize(self, size):
 		self._size = size
 	
@@ -53,6 +65,44 @@ class NodeClass:
 	def getIsNew(self):
 		return self._isNew
 
+class EdgeClass:
+	def __init__(self):
+		self._color = "rgb(128,128,128)"
+		self._source = ""
+		self._id = ""
+		self._target = ""
+		self._isNew = False
+		
+	def setColor(self,color):
+		self._color = color
+
+	def getColor(self):
+		return self._color
+		
+	def setSource(self, source):
+		self._source = source
+		
+	def getSource(self):
+		return self._source
+		
+	def setId(self, id):
+		self._id = id
+	
+	def getId(self):
+		return self._id
+		
+	def setTarget(self, target):
+		self._target = target
+	
+	def getTarget(self):
+		return self._target
+		
+	def setIsNew(self, isNew):
+		self._isNew = isNew
+	
+	def getIsNew(self):
+		return self._isNew
+		
 if __name__ == "__main__":
 
 	print ""
@@ -100,9 +150,22 @@ if __name__ == "__main__":
 				print "unknown hit"
 
 		nodeclasses[nodeclasses_idx].setIsNew = not(isHit)
-
-	# making 
-
+		if isHit:
+			id = jsondata["nodes"][idxHit]["id"]
+		else:
+			id = "n"+str(new_node_id)
+		nodeclasses[nodeclasses_idx].setId(id)
+		
+		nodeclasses_idx += 1
+		
+	# making EdgeClass and edgeclasses
+	for i in range(len(nodeclasses)-1):
+		source = nodeclasses[i].getId()
+		target = nodeclasses[i+1].getId()
+		
+		print "source", source, " target", target
+	
+	
 		# if isHit == True:
 		# 	print "    search result.... isHit = ", isHit, "make the size of the node bigger"
 		# 	node_size = jsondata["nodes"][idxHit]["size"]
@@ -133,10 +196,6 @@ if __name__ == "__main__":
 	# search edges
 
 
-
-
-
-	
 	print "------------------jsondata------------------"
 	print json.dumps(jsondata, indent = 4)
 	print "------------------jsonout------------------"
@@ -147,11 +206,12 @@ if __name__ == "__main__":
 	# f.close()
 
 
-	# nodeclasses.append(NodeClass())
-	#cl = nodeclasses[0]
-	# cl.setLabel("hogehoge")
-	print nodeclasses[0].getLabel(), nodeclasses[0].getIsNew()
 
+	for nc in nodeclasses:
+		print nc.getLabel(), nc.getIsNew(), nc.getX(), nc.getY(), nc.getColor(), nc.getId()
+
+	ec = EdgeClass()
+	print ec.getColor(), ec.getSource(), ec.getId(), ec.getTarget(), ec.getIsNew()
 
 	# comment no sample
 	# print json.dumps(jsondata["nodes"], sort_keys = True, indent = 4)
