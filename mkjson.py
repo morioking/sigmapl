@@ -25,6 +25,9 @@ class M3u8Class:
 	
 	def getLabel(self, i):
 		return self.__labels[i]
+		
+	def getLabels(self):
+		return self.__labels
 
 	def showLabels(self):
 		for label in self.__labels:
@@ -136,15 +139,9 @@ class EdgeClass:
 
 
 def import_playlist(m3u8):
-	labels = []
-	# load m3u8, extract label, make label list; labels
-	f = open(m3u8, "r")
-	for line in f:
-		print "import ",m3u8, line.strip()
-		if re.match("#EXTINF",line):
-			labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
-	f.close()
-	print "labels", labels
+
+	m3u8_class = M3u8Class(m3u8)
+	labels = m3u8_class.getLabels()
 
 	# making NodeClass and nodeclasses
 	new_node_id = len(jsondata["nodes"]) - 1
