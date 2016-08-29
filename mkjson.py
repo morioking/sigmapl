@@ -102,28 +102,17 @@ class EdgeClass:
 	
 	def getIsNew(self):
 		return self._isNew
-		
-if __name__ == "__main__":
 
-	# param = sys.argv
-	# file1 = param[1]
-	# print "import labels file is",file1
 
-	# load json data
-	f = open("data.json", "r")
-	jsondata = json.load(f)
-	f.close()
 
-	jsonout = copy.deepcopy(jsondata)
-
-	# load m3u8
-	f = open("test.m3u8", "r")
+def import_playlist(m3u8):
+	# load m3u8, extract label, make label list; labels
+	f = open(m3u8, "r")
 	for line in f:
-		print "import m3u8....", line.strip()
+		print "import ",m3u8, line.strip()
 		if re.match("#EXTINF",line):
 			labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
 	f.close()
-
 	print "labels", labels
 
 	# making NodeClass and nodeclasses
@@ -220,13 +209,11 @@ if __name__ == "__main__":
 		if ec.getIsNew():
 			jsonout["edges"].append({"color":ec.getColor(), "source":ec.getSource(), "id":ec.getId(), "target":ec.getTarget()})
 
-
 	print "------------------jsondata------------------"
 	print json.dumps(jsondata, indent = 4)
 	print "------------------jsonout------------------"
 	print json.dumps(jsonout, indent = 4)
-
-
+	
 	# for nc in nodeclasses:
 	# 	print nc.getLabel(), nc.getIsNew(), nc.getX(), nc.getY(), nc.getColor(), nc.getId()
 
@@ -236,4 +223,42 @@ if __name__ == "__main__":
 	# f = open ("data.json", "w")
 	# json.dump(jsonout, f)
 	# f.close()
+		
+if __name__ == "__main__":
+
+	# param = sys.argv
+	# file1 = param[1]
+	# print "import labels file is",file1
+
+	# load json data
+	f = open("data.json", "r")
+	jsondata = json.load(f)
+	f.close()
+
+	jsonout = copy.deepcopy(jsondata)
+
+	while 1:
+		print "enter..."
+		input_line = raw_input()
+		if input_line == "exit":
+			break
+		elif input_line == "show":
+			print "------------------data.json------------------"
+			print json.dumps(jsondata, indent = 4)
+		elif input_line == "import":
+			import_playlist("test.m3u8")
+		elif input_line == "mixpl":
+			print ""
+			print "mix 2 playlist mutually.....but this function is not implemented yet"
+			print "select fist playlist"
+			#pl1 = raw_input()
+			print "select second playlist"
+			#pl2 = raw_input()
+		else:
+			print "again"
+
+
+
+
+
 
