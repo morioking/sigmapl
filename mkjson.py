@@ -8,10 +8,27 @@ import copy
 import random
 
 jsondata = []
-labels = []
 jsonout = []
 nodeclasses = []
 edgeclasses = []
+
+class M3u8Class:
+	def __init__(self, file):
+		self.__file = file
+		self.__labels = []
+		f = open(file, "r")
+		for line in f:
+			print "import ",file, line.strip()
+			if re.match("#EXTINF",line):
+				self.__labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
+		f.close()
+	
+	def getLabel(self, i):
+		return self.__labels[i]
+
+	def showLabels(self):
+		for label in self.__labels:
+			print label
 
 class NodesClass:
 	def __init__(self):
@@ -118,8 +135,8 @@ class EdgeClass:
 		return self._isNew
 
 
-
 def import_playlist(m3u8):
+	labels = []
 	# load m3u8, extract label, make label list; labels
 	f = open(m3u8, "r")
 	for line in f:
@@ -240,10 +257,6 @@ def import_playlist(m3u8):
 		
 if __name__ == "__main__":
 
-	# param = sys.argv
-	# file1 = param[1]
-	# print "import labels file is",file1
-
 	# load json data
 	f = open("data.json", "r")
 	jsondata = json.load(f)
@@ -275,6 +288,9 @@ if __name__ == "__main__":
 			nsc.appendNode(nc)
 			print nsc.getNodesCount()
 			print nsc.getNode(0).getLabel()
+		elif input_line == "test2":
+			cl = M3u8Class("test.m3u8")
+			cl.showLabels()
 		else:
 			print "again"
 
