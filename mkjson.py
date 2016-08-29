@@ -12,6 +12,31 @@ jsonout = []
 nodeclasses = []
 edgeclasses = []
 
+class JsonClass:
+	def __init__(self, file):
+		self.__file = file
+		f = open(file, "r")
+		self.__jsondata = json.load(f)
+		f.close()
+
+	def show(self):
+		print json.dumps(self.__jsondata, indent = 4)
+		
+	def get_json(self):
+		return self.__jsondata
+	
+	def get_nodes(self):
+		return self.__jsondata["nodes"]
+
+	def get_node_id(self, idx):
+		return self.__jsondata["nodes"][idx]["id"]
+
+	def get_node_size(self, idx):
+		return self.__jsondata["nodes"][idx]["size"]
+
+	def get_node_label(self, idx):
+		return self.__jsondata["nodes"][idx]["label"]
+		
 class M3u8Class:
 	def __init__(self, file):
 		self.__file = file
@@ -23,13 +48,13 @@ class M3u8Class:
 				self.__labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
 		f.close()
 	
-	def getLabel(self, i):
+	def get_label(self, i):
 		return self.__labels[i]
 		
-	def getLabels(self):
+	def get_labels(self):
 		return self.__labels
 
-	def showLabels(self):
+	def show_labels(self):
 		for label in self.__labels:
 			print label
 
@@ -37,13 +62,13 @@ class NodesClass:
 	def __init__(self):
 		self.__nodeclasses = []
 
-	def appendNode(self, nodeclass):
+	def append_node(self, nodeclass):
 		self.__nodeclasses.append(nodeclass)
 		
-	def getNodesCount(self):
+	def get_nodes_count(self):
 		return len(self.__nodeclasses)
 	
-	def getNode(self, num):
+	def get_node(self, num):
 		return self.__nodeclasses[num]
 
 
@@ -57,46 +82,46 @@ class NodeClass:
 		self._size = 1
 		self._isNew = False
 
-	def setLabel(self, label):
+	def set_label(self, label):
 		self._label = label
 		
-	def getLabel(self):
+	def get_label(self):
 		return self._label
 
-	def setX(self, x):
+	def set_x(self, x):
 		self._x = x
 	
-	def getX(self):
+	def get_x(self):
 		return self._x
 		
-	def setY(self, y):
+	def set_y(self, y):
 		self._y = y
 
-	def getY(self):
+	def get_y(self):
 		return self._y
 		
-	def setColor(self, color):
+	def set_color(self, color):
 		self._color = color
 
-	def getColor(self):
+	def get_color(self):
 		return self._color
 
-	def setId(self, id):
+	def set_id(self, id):
 		self._id = id
 	
-	def getId(self):
+	def get_id(self):
 		return self._id
 
-	def setSize(self, size):
+	def set_size(self, size):
 		self._size = size
 	
-	def getSize(self):
+	def get_size(self):
 		return self._size
 		
-	def setIsNew(self, isNew):
+	def set_is_new(self, isNew):
 		self._isNew = isNew
 
-	def getIsNew(self):
+	def get_is_new(self):
 		return self._isNew
 
 class EdgeClass:
@@ -107,69 +132,69 @@ class EdgeClass:
 		self._target = ""
 		self._isNew = False
 		
-	def setColor(self,color):
+	def set_color(self,color):
 		self._color = color
 
-	def getColor(self):
+	def get_color(self):
 		return self._color
 		
-	def setSource(self, source):
+	def set_source(self, source):
 		self._source = source
 		
-	def getSource(self):
+	def get_source(self):
 		return self._source
 		
-	def setId(self, id):
+	def set_id(self, id):
 		self._id = id
 	
-	def getId(self):
+	def get_id(self):
 		return self._id
 		
-	def setTarget(self, target):
+	def set_target(self, target):
 		self._target = target
 	
-	def getTarget(self):
+	def get_target(self):
 		return self._target
 		
-	def setIsNew(self, isNew):
+	def set_is_new(self, isNew):
 		self._isNew = isNew
 	
-	def getIsNew(self):
+	def get_is_new(self):
 		return self._isNew
 
 
-def import_playlist(m3u8):
-
+def import_playlist(m3u8, json_class):
+	jsonout = copy.deepcopy(jsondata)
 	m3u8_class = M3u8Class(m3u8)
-	labels = m3u8_class.getLabels()
+	labels = m3u8_class.get_labels()
+	input_json_class = json_class
 
 	# making NodeClass and nodeclasses
-	new_node_id = len(jsondata["nodes"]) - 1
+	new_node_id = len(input_json_class.get_nodes()) - 1
 	nodeclasses_idx = 0
 	for label in labels:
 		isHit = False
 		idxHit = 0
 		node_size = 1
 		nodeclasses.append(NodeClass(label))
-		for i in range(len(jsondata["nodes"])):
-			# print "  compairing ", label, "VS", jsondata["nodes"][i]["label"], label.find(jsondata["nodes"][i]["label"])
-			if label.find(jsondata["nodes"][i]["label"]) == 0:
+		for i in range(len(input_json_class.get_nodes())):
+			if label.find(input_json_class.get_node_label(i)) == 0:
 				# hit
 				isHit = True
 				idxHit = i
 				break
-			elif label.find(jsondata["nodes"][i]["label"]) == -1:
+			elif label.find(input_json_class.get_node_label(i)) == -1:
 				# not-hit
 				isHit = False
 			else:
 				print "unknown hit"
 
-		nodeclasses[nodeclasses_idx].setIsNew(not(isHit))
+		nodeclasses[nodeclasses_idx].set_is_new(not(isHit))
 		if isHit:
-			id = jsondata["nodes"][idxHit]["id"]
+			id = input_json_class.get_node_id(idxHit)
 			posx = random.uniform(-1,1)
 			posy = random.uniform(-1,1)
-			size = jsondata["nodes"][idxHit]["size"] + 1
+			size = input_json_class.get_node_size(idxHit) + 1
 			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
 		else:
 			new_node_id += 1
@@ -179,74 +204,73 @@ def import_playlist(m3u8):
 			size = 1
 			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
 
-		nodeclasses[nodeclasses_idx].setId(id)
-		nodeclasses[nodeclasses_idx].setX(posx)
-		nodeclasses[nodeclasses_idx].setY(posy)
-		nodeclasses[nodeclasses_idx].setSize(size)
-		nodeclasses[nodeclasses_idx].setColor(color)
+		nodeclasses[nodeclasses_idx].set_id(id)
+		nodeclasses[nodeclasses_idx].set_x(posx)
+		nodeclasses[nodeclasses_idx].set_y(posy)
+		nodeclasses[nodeclasses_idx].set_size(size)
+		nodeclasses[nodeclasses_idx].set_color(color)
 		nodeclasses_idx += 1
 
 	# making EdgeClass and edgeclasses
-	for i in range(len(nodeclasses)-1):
-		source = nodeclasses[i].getId()
-		target = nodeclasses[i+1].getId()
-		ec = EdgeClass()
-		ec.setSource(source)
-		ec.setTarget(target)
-		edgeclasses.append(ec)
+	# for i in range(len(nodeclasses)-1):
+		# source = nodeclasses[i].get_id()
+		# target = nodeclasses[i+1].get_id()
+		# ec = EdgeClass()
+		# ec.set_source(source)
+		# ec.set_target(target)
+		# edgeclasses.append(ec)
 
-	# search isNew for EdgeClass
-	new_edge_id = len(jsondata["edges"]) - 1
-	for ec in edgeclasses:
-		isHit = False
-		source = ec.getSource()
-		target = ec.getTarget()
-		for i in range(len(jsondata["edges"])):
-			if (jsondata["edges"][i]["source"] == source) and (jsondata["edges"][i]["target"] == target):
-				isHit = True
-				break
-			else:
-				isHit = False
+	# # search isNew for EdgeClass
+	# new_edge_id = len(input_json_class.get_json()["edges"]) - 1
+	# for ec in edgeclasses:
+		# isHit = False
+		# source = ec.get_source()
+		# target = ec.get_target()
+		# for i in range(len(input_json_class.get_json()["edges"])):
+			# if (input_json_class.get_json()["edges"][i]["source"] == source) and (input_json_class.get_json()["edges"][i]["target"] == target):
+				# isHit = True
+				# break
+			# else:
+				# isHit = False
 
-		#print "edge",isHit
-		ec.setIsNew(not(isHit))
-		if isHit:
-			id = jsondata["edges"][i]["id"]
-		else:
-			new_edge_id += 1
-			id = "e"+str(new_edge_id)
+		# #print "edge",isHit
+		# ec.set_is_new(not(isHit))
+		# if isHit:
+			# id = input_json_class.get_json()["edges"][i]["id"]
+		# else:
+			# new_edge_id += 1
+			# id = "e"+str(new_edge_id)
 
-		ec.setId(id)
+		# ec.set_id(id)
+
+	# # update jsonout for node
+	# for nc in nodeclasses:
+		# if nc.get_is_new():
+			# jsonout["nodes"].append({"color":nc.get_color(), "label":nc.get_label(), "y":nc.get_y(), "x":nc.get_x(), "id":nc.get_id(), "size":nc.get_size()})
+		# else:
+			# for i in range(len(input_json_class.get_nodes())):
+				# if input_json_class.get_nodes()[i]["id"] == nc.get_id():
+					# jsonout["nodes"][i]["color"] = nc.get_color()
+					# jsonout["nodes"][i]["x"] = nc.get_x()
+					# jsonout["nodes"][i]["y"] = nc.get_y()
+					# jsonout["nodes"][i]["size"] = nc.get_size()
 
 
-	# update jsonout for node
-	for nc in nodeclasses:
-		if nc.getIsNew():
-			jsonout["nodes"].append({"color":nc.getColor(), "label":nc.getLabel(), "y":nc.getY(), "x":nc.getX(), "id":nc.getId(), "size":nc.getSize()})
-		else:
-			for i in range(len(jsondata["nodes"])):
-				if jsondata["nodes"][i]["id"] == nc.getId():
-					jsonout["nodes"][i]["color"] = nc.getColor()
-					jsonout["nodes"][i]["x"] = nc.getX()
-					jsonout["nodes"][i]["y"] = nc.getY()
-					jsonout["nodes"][i]["size"] = nc.getSize()
+	# # update jsonout for edge
+	# for ec in edgeclasses:
+		# if ec.get_is_new():
+			# jsonout["edges"].append({"color":ec.get_color(), "source":ec.get_source(), "id":ec.get_id(), "target":ec.get_target()})
 
-
-	# update jsonout for edge
-	for ec in edgeclasses:
-		if ec.getIsNew():
-			jsonout["edges"].append({"color":ec.getColor(), "source":ec.getSource(), "id":ec.getId(), "target":ec.getTarget()})
-
-	print "------------------jsondata------------------"
-	print json.dumps(jsondata, indent = 4)
-	print "------------------jsonout------------------"
-	print json.dumps(jsonout, indent = 4)
+	# print "------------------jsondata------------------"
+	# print json.dumps(jsondata, indent = 4)
+	# print "------------------jsonout------------------"
+	# print json.dumps(jsonout, indent = 4)
 	
 	# for nc in nodeclasses:
-	# 	print nc.getLabel(), nc.getIsNew(), nc.getX(), nc.getY(), nc.getColor(), nc.getId()
+	# 	print nc.get_label(), nc.get_is_new(), nc.get_x(), nc.get_y(), nc.get_color(), nc.get_id()
 
 	# for ec in edgeclasses:
-	# 	print ec.getColor(), ec.getSource(), ec.getId(), ec.getTarget(), ec.getIsNew()
+	# 	print ec.get_color(), ec.get_source(), ec.get_id(), ec.get_target(), ec.get_is_new()
 
 	# f = open ("data.json", "w")
 	# json.dump(jsonout, f)
@@ -255,12 +279,8 @@ def import_playlist(m3u8):
 if __name__ == "__main__":
 
 	# load json data
-	f = open("data.json", "r")
-	jsondata = json.load(f)
-	f.close()
-
-	jsonout = copy.deepcopy(jsondata)
-
+	input_json_class = JsonClass("data.json")
+	
 	while 1:
 		print "enter..."
 		input_line = raw_input()
@@ -268,9 +288,13 @@ if __name__ == "__main__":
 			break
 		elif input_line == "show":
 			print "------------------data.json------------------"
-			print json.dumps(jsondata, indent = 4)
+			print input_json_class.show()
+			print input_json_class.get_nodes()
+			print input_json_class.get_node_label(2)
+			print input_json_class.get_node_size(2)
+			print input_json_class.get_node_id(2)
 		elif input_line == "import":
-			import_playlist("test.m3u8")
+			import_playlist("test.m3u8", input_json_class)
 		elif input_line == "mixpl":
 			print ""
 			print "mix 2 playlist mutually.....but this function is not implemented yet"
@@ -282,12 +306,12 @@ if __name__ == "__main__":
 			print "test NodesClass"
 			nc = NodeClass("hoge")
 			nsc = NodesClass()
-			nsc.appendNode(nc)
-			print nsc.getNodesCount()
-			print nsc.getNode(0).getLabel()
+			nsc.append_node(nc)
+			print nsc.get_nodes_count()
+			print nsc.get_node(0).get_label()
 		elif input_line == "test2":
 			cl = M3u8Class("test.m3u8")
-			cl.showLabels()
+			cl.show_labels()
 		else:
 			print "again"
 
