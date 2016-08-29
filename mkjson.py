@@ -13,6 +13,20 @@ jsonout = []
 nodeclasses = []
 edgeclasses = []
 
+class NodesClass:
+	def __init__(self):
+		self.__nodeclasses = []
+
+	def appendNode(self, nodeclass):
+		self.__nodeclasses.append(nodeclass)
+		
+	def getNodesCount(self):
+		return len(self.__nodeclasses)
+	
+	def getNode(self, num):
+		return self.__nodeclasses[num]
+
+
 class NodeClass:
 	def __init__(self, label):
 		self._color = "rgb(0,255,0)"
@@ -254,6 +268,13 @@ if __name__ == "__main__":
 			#pl1 = raw_input()
 			print "select second playlist"
 			#pl2 = raw_input()
+		elif input_line == "test":
+			print "test NodesClass"
+			nc = NodeClass("hoge")
+			nsc = NodesClass()
+			nsc.appendNode(nc)
+			print nsc.getNodesCount()
+			print nsc.getNode(0).getLabel()
 		else:
 			print "again"
 
