@@ -16,11 +16,28 @@ class JsonClass:
 	def __init__(self):
 		self.__file = ""
 	
-	def load_file(self, file):
+	def load_json(self, file):
 		f = open(file, "r")
 		self.__jsondata = json.load(f)
 		f.close()
 
+	def load_m3u8(self, file):
+		print "load ",file
+		f = open(file, "r")
+		labels = []
+		self.__jsondata = {"nodes":[], "edges":[]}
+		for line in f:
+			print "import ",file, line.strip()
+			if re.match("#EXTINF",line):
+				labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
+		f.close()
+		# create nodes
+		#print self.__jsondata["nodes"]
+		i = 0
+		for label in labels:
+			self.__jsondata["nodes"].append({"color":"rgb(255,204,102)", "label":label, "y":0, "x":0, "id":"", "size":1})
+			i += 1
+	
 	def show(self):
 		print json.dumps(self.__jsondata, indent = 4)
 		
@@ -30,6 +47,9 @@ class JsonClass:
 	def get_nodes(self):
 		return self.__jsondata["nodes"]
 
+	def get_nodes_count(self):
+		return len(self.__jsondata["nodes"])
+		
 	def get_node_id(self, i):
 		return self.__jsondata["nodes"][i]["id"]
 
@@ -70,9 +90,15 @@ class JsonClass:
 	def set_node_size(self, id, size):
 		pass
 
+	def set_node_id(self, i, id):
+		self.__jsondata["nodes"][i]["id"] = id
+
 	def create_new_node(self, id, label, x, y, color, size):
 		pass
 		
+	def create_new_edge(self, color, source, id, target):
+		self.__jsondata["edges"].append({"color":color, "source":source, "id":id, "target":target})
+	
 class M3u8Class:
 	def __init__(self, file):
 		self.__file = file
@@ -332,7 +358,7 @@ if __name__ == "__main__":
 
 	# load json data
 	input_json_class = JsonClass()
-	input_json_class.load_file("data.json")
+	input_json_class.load_json("data.json")
 	
 	while 1:
 		print "enter..."
@@ -372,6 +398,23 @@ if __name__ == "__main__":
 			print input_json_class.get_node_id_with_label("")
 			print input_json_class.get_node_index_with_id("n0")
 			print input_json_class.get_node_index_with_id("n2")
+		elif input_line == "load":
+			aaa = JsonClass()
+			aaa.load_m3u8("test.m3u8")
+			aaa.show()
+			bbb = JsonClass()
+			bbb.load_json("data.json")
+			bbb.show()
+			# update node id for m3u8 data
+			for i in range(aaa.get_nodes_count()):
+				aaa.set_node_id(i, bbb.get_node_id_with_label(aaa.get_node_label(i)))
+			aaa.show()
+			# create edge for m3u8 data
+			for i in range(aaa.get_nodes_count()-1):
+				source = aaa.get_node_id(i)
+				target = aaa.get_node_id(i + 1)
+				aaa.create_new_edge("rgb(128, 128, 128)", source, "", target)
+			aaa.show()
 		else:
 			print "again"
 
