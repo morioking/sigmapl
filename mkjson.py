@@ -13,8 +13,10 @@ nodeclasses = []
 edgeclasses = []
 
 class JsonClass:
-	def __init__(self, file):
-		self.__file = file
+	def __init__(self):
+		self.__file = ""
+	
+	def load_file(self, file):
 		f = open(file, "r")
 		self.__jsondata = json.load(f)
 		f.close()
@@ -28,14 +30,48 @@ class JsonClass:
 	def get_nodes(self):
 		return self.__jsondata["nodes"]
 
-	def get_node_id(self, idx):
-		return self.__jsondata["nodes"][idx]["id"]
+	def get_node_id(self, i):
+		return self.__jsondata["nodes"][i]["id"]
 
-	def get_node_size(self, idx):
-		return self.__jsondata["nodes"][idx]["size"]
+	def get_node_size(self, i):
+		return self.__jsondata["nodes"][i]["size"]
 
-	def get_node_label(self, idx):
-		return self.__jsondata["nodes"][idx]["label"]
+	def get_node_label(self, i):
+		return self.__jsondata["nodes"][i]["label"]
+	
+	def get_node_id_with_label(self, label):
+		id = "none"
+		for i in range(len(self.__jsondata["nodes"])):
+			if label.find(self.__jsondata["nodes"][i]["label"]) == 0:
+				# hit
+				id = self.__jsondata["nodes"][i]["id"]
+
+		return id
+	
+	def get_node_index_with_id(self, id):
+		index = -1
+		for i in range(len(self.__jsondata["nodes"])):
+			if self.__jsondata["nodes"][i]["id"] == id:
+				index = i
+		return index
+	
+	def set_node_x(self, id, x):
+		pass
+
+	def set_node_y(self, id, y):
+		pass
+
+	def set_node_color(self, id, color):
+		pass
+
+	def set_node_label(self, id, label):
+		pass
+	
+	def set_node_size(self, id, size):
+		pass
+
+	def create_new_node(self, id, label, x, y, color, size):
+		pass
 		
 class M3u8Class:
 	def __init__(self, file):
@@ -124,6 +160,16 @@ class NodeClass:
 	def get_is_new(self):
 		return self._isNew
 
+class EdgesClass:
+	def __init__(self):
+		self.__edgeclasses = []
+		
+	def get_edges_count(self):
+		return len(self.__edgeclasses)
+	
+	def get_edge(self, num):
+		return self.__edgeclasses[num]
+	
 class EdgeClass:
 	def __init__(self):
 		self._color = "rgb(128,128,128)"
@@ -173,43 +219,49 @@ def import_playlist(m3u8, json_class):
 	new_node_id = len(input_json_class.get_nodes()) - 1
 	nodeclasses_idx = 0
 	for label in labels:
-		isHit = False
-		idxHit = 0
-		node_size = 1
-		nodeclasses.append(NodeClass(label))
-		for i in range(len(input_json_class.get_nodes())):
-			if label.find(input_json_class.get_node_label(i)) == 0:
-				# hit
-				isHit = True
-				idxHit = i
-				break
-			elif label.find(input_json_class.get_node_label(i)) == -1:
-				# not-hit
-				isHit = False
-			else:
-				print "unknown hit"
-
-		nodeclasses[nodeclasses_idx].set_is_new(not(isHit))
-		if isHit:
-			id = input_json_class.get_node_id(idxHit)
-			posx = random.uniform(-1,1)
-			posy = random.uniform(-1,1)
-			size = input_json_class.get_node_size(idxHit) + 1
-			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+		print label
+		if input_json_class.get_node_id_with_label(label) == "none":
+			print "    -> create new node"
 		else:
-			new_node_id += 1
-			id = "n"+str(new_node_id)
-			posx = random.uniform(-1,1)
-			posy = random.uniform(-1,1)
-			size = 1
-			color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+			print "    -> update node"
 
-		nodeclasses[nodeclasses_idx].set_id(id)
-		nodeclasses[nodeclasses_idx].set_x(posx)
-		nodeclasses[nodeclasses_idx].set_y(posy)
-		nodeclasses[nodeclasses_idx].set_size(size)
-		nodeclasses[nodeclasses_idx].set_color(color)
-		nodeclasses_idx += 1
+		# isHit = False
+		# idxHit = 0
+		# node_size = 1
+		# nodeclasses.append(NodeClass(label))
+		# for i in range(len(input_json_class.get_nodes())):
+			# if label.find(input_json_class.get_node_label(i)) == 0:
+				# # hit
+				# isHit = True
+				# idxHit = i
+				# break
+			# elif label.find(input_json_class.get_node_label(i)) == -1:
+				# # not-hit
+				# isHit = False
+			# else:
+				# print "unknown hit"
+
+		# nodeclasses[nodeclasses_idx].set_is_new(not(isHit))
+		# if isHit:
+			# id = input_json_class.get_node_id(idxHit)
+			# posx = random.uniform(-1,1)
+			# posy = random.uniform(-1,1)
+			# size = input_json_class.get_node_size(idxHit) + 1
+			# color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+		# else:
+			# new_node_id += 1
+			# id = "n"+str(new_node_id)
+			# posx = random.uniform(-1,1)
+			# posy = random.uniform(-1,1)
+			# size = 1
+			# color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+
+		# nodeclasses[nodeclasses_idx].set_id(id)
+		# nodeclasses[nodeclasses_idx].set_x(posx)
+		# nodeclasses[nodeclasses_idx].set_y(posy)
+		# nodeclasses[nodeclasses_idx].set_size(size)
+		# nodeclasses[nodeclasses_idx].set_color(color)
+		# nodeclasses_idx += 1
 
 	# making EdgeClass and edgeclasses
 	# for i in range(len(nodeclasses)-1):
@@ -279,7 +331,8 @@ def import_playlist(m3u8, json_class):
 if __name__ == "__main__":
 
 	# load json data
-	input_json_class = JsonClass("data.json")
+	input_json_class = JsonClass()
+	input_json_class.load_file("data.json")
 	
 	while 1:
 		print "enter..."
@@ -312,6 +365,13 @@ if __name__ == "__main__":
 		elif input_line == "test2":
 			cl = M3u8Class("test.m3u8")
 			cl.show_labels()
+		elif input_line == "test3":
+			cl = M3u8Class("test.m3u8")
+			print cl.get_label(3)
+			print input_json_class.get_node_id_with_label(cl.get_label(3))
+			print input_json_class.get_node_id_with_label("")
+			print input_json_class.get_node_index_with_id("n0")
+			print input_json_class.get_node_index_with_id("n2")
 		else:
 			print "again"
 
