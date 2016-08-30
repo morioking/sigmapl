@@ -98,6 +98,27 @@ class JsonClass:
 		
 	def create_new_edge(self, color, source, id, target):
 		self.__jsondata["edges"].append({"color":color, "source":source, "id":id, "target":target})
+
+	def get_edge_id_with_source_target(self, source, target):
+		id = "none"
+		for i in range(len(self.__jsondata["edges"])):
+			if self.__jsondata["edges"][i]["source"] == source:
+				if self.__jsondata["edges"][i]["target"] == target:
+					# hit
+					id = self.__jsondata["edges"][i]["id"]
+		return id
+
+	def get_edges_count(self):
+		return len(self.__jsondata["edges"])
+
+	def get_edge_source(self, i):
+		return self.__jsondata["edges"][i]["source"]
+
+	def get_edge_target(self, i):
+		return self.__jsondata["edges"][i]["target"]
+
+	def set_edge_id(self, i, id):
+		self.__jsondata["edges"][i]["id"] = id
 	
 class M3u8Class:
 	def __init__(self, file):
@@ -414,6 +435,10 @@ if __name__ == "__main__":
 				source = aaa.get_node_id(i)
 				target = aaa.get_node_id(i + 1)
 				aaa.create_new_edge("rgb(128, 128, 128)", source, "", target)
+			aaa.show()
+			# update edge id for m3u8
+			for i in range(aaa.get_edges_count()):
+				aaa.set_edge_id(i, bbb.get_edge_id_with_source_target(aaa.get_edge_source(i), aaa.get_edge_target(i)))
 			aaa.show()
 		else:
 			print "again"
