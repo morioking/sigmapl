@@ -114,6 +114,13 @@ class JsonClass:
 					# hit
 					id = self.__jsondata["edges"][i]["id"]
 		return id
+		
+	def get_edge_index_with_id(self, id):
+		index = -1
+		for i in range(len(self.__jsondata["edges"])):
+			if self.__jsondata["edges"][i]["id"] == id:
+				index = i
+		return index
 
 	def get_edges_count(self):
 		return len(self.__jsondata["edges"])
@@ -121,12 +128,34 @@ class JsonClass:
 	def get_edge_source(self, i):
 		return self.__jsondata["edges"][i]["source"]
 
+	def get_edge_source_with_id(self, id):
+		return self.get_edge_source(self.get_edge_index_with_id(id))
+	
 	def get_edge_target(self, i):
 		return self.__jsondata["edges"][i]["target"]
+
+	def get_edge_target_with_id(self, id):
+		return self.get_edge_target(self.get_edge_index_with_id(id))
+		
+	def get_edge_id(self, i):
+		return self.__jsondata["edges"][i]["id"]
 
 	def set_edge_id(self, i, id):
 		self.__jsondata["edges"][i]["id"] = id
 	
+	def set_edge_source(self, i, source):
+		self.__jsondata["edges"][i]["source"] = source
+	
+	def set_edge_source_with_id(self, id, source):
+		self.set_edge_source(self.get_edge_index_with_id(id), source)
+
+	def set_edge_target(self, i, target):
+		self.__jsondata["edges"][i]["target"] = target
+	
+	def set_edge_target_with_id(self, id, target):
+		self.set_edge_target(self.get_edge_index_with_id(id), target)
+		
+		
 class M3u8Class:
 	def __init__(self, file):
 		self.__file = file
@@ -390,7 +419,7 @@ if __name__ == "__main__":
 	m3u8 = ""
 
 	while 1:
-		print "enter..."
+		print "type command..."
 		input_line = raw_input()
 		if input_line == "exit":
 			break
@@ -433,19 +462,27 @@ if __name__ == "__main__":
 			data.show()
 			print "set m3u8 to data"
 			# process nodes
-			new_id_count = data.get_nodes_count()
+			new_node_id_number = data.get_nodes_count()
 			for i in range(m3u8.get_nodes_count()):
 				if m3u8.get_node_id(i) == "none":
 					posx = random.uniform(-1,1)
 					posy = random.uniform(-1,1)
 					size = 1
 					color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
-					data.create_new_node(color, m3u8.get_node_label(i), posy, posx, "n"+str(new_id_count), size)
-					new_id_count += 1
+					data.create_new_node(color, m3u8.get_node_label(i), posy, posx, "n"+str(new_node_id_number), size)
+					new_node_id_number += 1
 				else:
 					data.set_node_size_with_id(m3u8.get_node_id(i), data.get_node_size_with_id(m3u8.get_node_id(i)) + 1)
 			data.show()
 			# process edges
+			new_edge_id_number = data.get_edges_count()
+			for i in range(m3u8.get_edges_count()): 
+				if m3u8.get_edge_id(i) == "none":
+					color = "rgb(128, 128, 128)"
+					id = "e"+str(new_edge_id_number)
+					data.create_new_edge(color, m3u8.get_edge_source(i), id, m3u8.get_edge_target(i))
+					new_edge_id_number += 1
+			data.show()
 		else:
 			print "again"
 
