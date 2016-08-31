@@ -22,21 +22,22 @@ class JsonClass:
 		f.close()
 
 	def load_m3u8(self, file):
-		print "load ",file
+		print "loading",file, "..."
 		f = open(file, "r")
 		labels = []
 		self.__jsondata = {"nodes":[], "edges":[]}
 		for line in f:
-			print "import ",file, line.strip()
 			if re.match("#EXTINF",line):
-				labels.append(re.sub("#EXTINF(.*[,])","",line).strip())
+				label = re.sub("#EXTINF(.*[,])","",line).strip()
+				labels.append(label)
+				print "    import ", label
 		f.close()
+
 		# create nodes
-		#print self.__jsondata["nodes"]
-		i = 0
 		for label in labels:
-			self.__jsondata["nodes"].append({"color":"rgb(255,204,102)", "label":label, "y":0, "x":0, "id":"", "size":1})
-			i += 1
+			self.create_new_node("rgb(255,204,102)", label, 0, 0, "", 1)
+
+		print "finish loading!"
 	
 	def show(self):
 		print json.dumps(self.__jsondata, indent = 4)
@@ -55,7 +56,10 @@ class JsonClass:
 
 	def get_node_size(self, i):
 		return self.__jsondata["nodes"][i]["size"]
-
+	
+	def get_node_size_with_id(self, id):
+		return self.get_node_size(self.get_node_index_with_id(id))
+		
 	def get_node_label(self, i):
 		return self.__jsondata["nodes"][i]["label"]
 	
@@ -87,14 +91,19 @@ class JsonClass:
 	def set_node_label(self, id, label):
 		pass
 	
-	def set_node_size(self, id, size):
-		pass
+	def set_node_size(self, i, size):
+		self.__jsondata["nodes"][i]["size"] = size
+
+	def set_node_size_with_id(self, id, size):
+		for i in range(len(self.__jsondata["nodes"])):
+			if self.__jsondata["nodes"][i]["id"] == id:
+				self.set_node_size(i, size)
 
 	def set_node_id(self, i, id):
 		self.__jsondata["nodes"][i]["id"] = id
 
-	def create_new_node(self, id, label, x, y, color, size):
-		pass
+	def create_new_node(self, color, label, y, x, id, size):
+		self.__jsondata["nodes"].append({"color":color, "label":label, "y":y, "x":x, "id":id, "size":size})
 		
 	def create_new_edge(self, color, source, id, target):
 		self.__jsondata["edges"].append({"color":color, "source":source, "id":id, "target":target})
@@ -378,23 +387,17 @@ def import_playlist(m3u8, json_class):
 if __name__ == "__main__":
 
 	# load json data
-	input_json_class = JsonClass()
-	input_json_class.load_json("data.json")
-	
+	data = JsonClass()
+	data.load_json("data.json")
+	m3u8 = ""
+
 	while 1:
 		print "enter..."
 		input_line = raw_input()
 		if input_line == "exit":
 			break
-		elif input_line == "show":
-			print "------------------data.json------------------"
-			print input_json_class.show()
-			print input_json_class.get_nodes()
-			print input_json_class.get_node_label(2)
-			print input_json_class.get_node_size(2)
-			print input_json_class.get_node_id(2)
 		elif input_line == "import":
-			import_playlist("test.m3u8", input_json_class)
+			import_playlist("test.m3u8", data)
 		elif input_line == "mixpl":
 			print ""
 			print "mix 2 playlist mutually.....but this function is not implemented yet"
@@ -402,44 +405,49 @@ if __name__ == "__main__":
 			#pl1 = raw_input()
 			print "select second playlist"
 			#pl2 = raw_input()
-		elif input_line == "test":
-			print "test NodesClass"
-			nc = NodeClass("hoge")
-			nsc = NodesClass()
-			nsc.append_node(nc)
-			print nsc.get_nodes_count()
-			print nsc.get_node(0).get_label()
-		elif input_line == "test2":
-			cl = M3u8Class("test.m3u8")
-			cl.show_labels()
-		elif input_line == "test3":
-			cl = M3u8Class("test.m3u8")
-			print cl.get_label(3)
-			print input_json_class.get_node_id_with_label(cl.get_label(3))
-			print input_json_class.get_node_id_with_label("")
-			print input_json_class.get_node_index_with_id("n0")
-			print input_json_class.get_node_index_with_id("n2")
+			print "output file"
+			#pl3 = raw_input()
 		elif input_line == "load":
-			aaa = JsonClass()
-			aaa.load_m3u8("test.m3u8")
-			aaa.show()
-			bbb = JsonClass()
-			bbb.load_json("data.json")
-			bbb.show()
+			# sequence diagram
+			# https://creately.com/diagram/isi7szk61/ZdBFzRm5MscjkiipVY4ee11xM%3D
+			print "load m3u8 format playlist."
+			print "select m3u8 file..."
+			#input_file = raw_input()
+			input_file = "test.m3u8"
+			m3u8 = JsonClass()
+			m3u8.load_m3u8(input_file)
+
 			# update node id for m3u8 data
-			for i in range(aaa.get_nodes_count()):
-				aaa.set_node_id(i, bbb.get_node_id_with_label(aaa.get_node_label(i)))
-			aaa.show()
+			for i in range(m3u8.get_nodes_count()):
+				m3u8.set_node_id(i, data.get_node_id_with_label(m3u8.get_node_label(i)))
+			#m3u8.show()
 			# create edge for m3u8 data
-			for i in range(aaa.get_nodes_count()-1):
-				source = aaa.get_node_id(i)
-				target = aaa.get_node_id(i + 1)
-				aaa.create_new_edge("rgb(128, 128, 128)", source, "", target)
-			aaa.show()
+			for i in range(m3u8.get_nodes_count()-1):
+				source = m3u8.get_node_id(i)
+				target = m3u8.get_node_id(i + 1)
+				m3u8.create_new_edge("rgb(128, 128, 128)", source, "", target)
+			#m3u8.show()
 			# update edge id for m3u8
-			for i in range(aaa.get_edges_count()):
-				aaa.set_edge_id(i, bbb.get_edge_id_with_source_target(aaa.get_edge_source(i), aaa.get_edge_target(i)))
-			aaa.show()
+			for i in range(m3u8.get_edges_count()):
+				m3u8.set_edge_id(i, data.get_edge_id_with_source_target(m3u8.get_edge_source(i), m3u8.get_edge_target(i)))
+			m3u8.show()
+		elif input_line == "set":
+			data.show()
+			print "set m3u8 to data"
+			# process nodes
+			new_id_count = data.get_nodes_count()
+			for i in range(m3u8.get_nodes_count()):
+				if m3u8.get_node_id(i) == "none":
+					posx = random.uniform(-1,1)
+					posy = random.uniform(-1,1)
+					size = 1
+					color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+					data.create_new_node(color, m3u8.get_node_label(i), posy, posx, "n"+str(new_id_count), size)
+					new_id_count += 1
+				else:
+					data.set_node_size_with_id(m3u8.get_node_id(i), data.get_node_size_with_id(m3u8.get_node_id(i)) + 1)
+			data.show()
+			# process edges
 		else:
 			print "again"
 
