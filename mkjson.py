@@ -95,9 +95,7 @@ class JsonClass:
 		self.__jsondata["nodes"][i]["size"] = size
 
 	def set_node_size_with_id(self, id, size):
-		for i in range(len(self.__jsondata["nodes"])):
-			if self.__jsondata["nodes"][i]["id"] == id:
-				self.set_node_size(i, size)
+		self.set_node_size(self.get_node_index_with_id(id), size)
 
 	def set_node_id(self, i, id):
 		self.__jsondata["nodes"][i]["id"] = id
