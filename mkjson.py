@@ -7,36 +7,22 @@ import re
 import copy
 import random
 
-class JsonClass:
+class DataClass:
 	def __init__(self):
 		self.__file = ""
-	
+		self.__data = ""
+
 	def load_json(self, file):
 		f = open(file, "r")
 		self.__data = json.load(f)
 		f.close()
-
-	def load_m3u8(self, file):
-		print "loading",file, "..."
-		f = open(file, "r")
-		labels = []
-		self.__data = {"nodes":[], "edges":[]}
-		for line in f:
-			if re.match("#EXTINF",line):
-				label = re.sub("#EXTINF(.[0-9]{3,4}[,])","",line).strip()
-				labels.append(label)
-				print "    import ", label
-		f.close()
-
-		# create nodes
-		for label in labels:
-			self.create_new_node("rgb(255,204,102)", label, 0, 0, "", 1)
-
-		print "finish loading!"
 	
 	def show(self):
 		print json.dumps(self.__data, indent = 4)
-		
+	
+	def set_data(self, data):
+		self.__data = data
+
 	def get_data(self):
 		return self.__data
 	
@@ -155,6 +141,37 @@ class JsonClass:
 
 	def del_edge_with_id(self, id):
 		self.del_edge(self.get_edge_index_with_id(id))
+
+		
+class M3u8Class(DataClass):
+	def __init__(self):
+		DataClass.__init__(self)
+		DataClass.set_data(self, {"nodes":[], "edges":[]})
+		self.__new_node_ids = []
+		self.__old_node_ids = []
+		self.__new_edge_ids = []
+		self.__old_edge_ids = []
+		self.__labels = []
+		
+	def load_m3u8(self, file):
+		print "loading",file, "..."
+		f = open(file, "r")
+		labels = []
+		#self.__data = {"nodes":[], "edges":[]}
+		for line in f:
+			if re.match("#EXTINF",line):
+				label = re.sub("#EXTINF(.[0-9]{3,4}[,])","",line).strip()
+				self.__labels.append(label)
+				print "    import ", label
+		f.close()
+
+		print "finish loading!"
+		
+	def get_m3u8_label(self, i):
+		return self.__labels[i]
+		
+	def get_m3u8_labels_count(self):
+		return len(self.__labels)
 		
 def mixplaylist(pl1, pl2):
 	list_pl1 = []
@@ -215,7 +232,7 @@ def mixplaylist(pl1, pl2):
 if __name__ == "__main__":
 
 	# load json data
-	data = JsonClass()
+	data = DataClass()
 	data.load_json("data.json")
 	m3u8 = ""
 
@@ -239,8 +256,11 @@ if __name__ == "__main__":
 			print "select m3u8 file..."
 			input_file = raw_input()
 			#input_file = "test.m3u8"
-			m3u8 = JsonClass()
+			m3u8 = M3u8Class()
 			m3u8.load_m3u8(input_file)
+			for i in range(m3u8.get_m3u8_labels_count()):
+				print m3u8.get_m3u8_label(i)
+				m3u8.create_new_node("rgb(255,204,102)", m3u8.get_m3u8_label(i), 0, 0, "", 1)
 
 			# update node id for m3u8 data
 			new_node_id_number = data.get_nodes_count()
