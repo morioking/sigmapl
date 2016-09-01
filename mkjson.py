@@ -55,16 +55,18 @@ class DataClass:
 				index = i
 		return index
 	
-	def set_node_x(self, id, x):
+	def set_node_x(self, i, x):
+		self.__data["nodes"][i]["x"] = x
 		pass
 
-	def set_node_y(self, id, y):
+	def set_node_y(self, i, y):
+		self.__data["nodes"][i]["y"] = y
 		pass
 
-	def set_node_color(self, id, color):
+	def set_node_color(self, i, color):
 		pass
 
-	def set_node_label(self, id, label):
+	def set_node_label(self, i, label):
 		pass
 	
 	def set_node_size(self, i, size):
@@ -172,8 +174,44 @@ class M3u8DataClass(DataClass):
 		
 	def get_m3u8_labels_count(self):
 		return len(self.__labels)
-		
-def mixplaylist(pl1, pl2):
+
+	def append_new_node_id(self, id):
+		self.__new_node_ids.append(id)
+
+	def get_new_node_id(self, i):
+		return self.__new_node_ids[i]
+
+	def get_new_node_ids_count(self):
+		return len(self.__new_node_ids)
+
+	def append_old_node_id(self, id):
+		self.__old_node_ids.append(id)
+
+	def get_old_node_id(self, i):
+		return self.__old_node_ids[i]
+
+	def get_old_node_ids_count(self):
+		return len(self.__old_node_ids)
+
+	def append_new_edge_id(self, id):
+		self.__new_edge_ids.append(id)
+
+	def get_new_edge_id(self, i):
+		return self.__new_edge_ids[i]
+
+	def get_new_edge_ids_count(self):
+		return len(self.__new_edge_ids)
+
+	def append_old_edge_id(self, id):
+		self.__old_edge_ids.append(id)
+
+	def get_old_edge_id(self, i):
+		return self.__old_edge_ids[i]
+
+	def get_old_edge_ids_count(self):
+		return len(self.__old_edge_ids)
+
+def mixplaylist(pl1, pl2, outpl):
 	list_pl1 = []
 	list_pl2 = []
 	list_outpl = []
@@ -216,9 +254,10 @@ def mixplaylist(pl1, pl2):
 
 	list_outpl.insert(0, header)
 
-	tdatetime = dt.now()
-	tstr = tdatetime.strftime('%Y-%m-%d')
-	file3 = "MIXED HISTORY_"+tstr+".m3u8"
+	# tdatetime = dt.now()
+	# tstr = tdatetime.strftime('%Y-%m-%d')
+	# file3 = "MIXED HISTORY_"+tstr+".m3u8"
+	file3 = outpl
 	f = open(file3, "w")
 	for line in list_outpl:
 		f.write(line)
@@ -228,6 +267,7 @@ def mixplaylist(pl1, pl2):
 	print "finish mixing!!"
 	print "the mixed playlist file is",file3
 	print ""
+
 
 if __name__ == "__main__":
 
@@ -246,7 +286,9 @@ if __name__ == "__main__":
 			pl1 = raw_input()
 			print "input second playlist"
 			pl2 = raw_input()
-			mixplaylist(pl1, pl2)
+			print "out playlist"
+			outpl = raw_input()
+			mixplaylist(pl1, pl2, outpl)
 		elif input_line == "load":
 			# sequence diagram
 			# https://creately.com/diagram/isi7szk61/ZdBFzRm5MscjkiipVY4ee11xM%3D
@@ -266,43 +308,46 @@ if __name__ == "__main__":
 				id = data.get_node_id_with_label(m3u8.get_node_label(i))
 				if id == "none":
 					m3u8.set_node_id(i, "n"+str(new_node_id_number))
+					m3u8.append_new_node_id(m3u8.get_node_id(i))
 					new_node_id_number += 1
 				else:
 					m3u8.set_node_id(i, id)
-			#m3u8.show()
+					m3u8.append_old_node_id(m3u8.get_node_id(i))
+
 			# create edge for m3u8 data
 			for i in range(m3u8.get_nodes_count()-1):
 				source = m3u8.get_node_id(i)
 				target = m3u8.get_node_id(i + 1)
 				m3u8.create_new_edge("rgb(128, 128, 128)", source, "", target)
-			#m3u8.show()
+
 			# update edge id for m3u8
+			new_edge_id_number = data.get_edges_count()
 			for i in range(m3u8.get_edges_count()):
-				m3u8.set_edge_id(i, data.get_edge_id_with_source_target(m3u8.get_edge_source(i), m3u8.get_edge_target(i)))
+				id = data.get_edge_id_with_source_target(m3u8.get_edge_source(i), m3u8.get_edge_target(i))
+				if id == "none":
+					m3u8.set_edge_id(i, "e"+str(new_edge_id_number))
+					m3u8.append_new_edge_id(m3u8.get_edge_id(i))
+					new_edge_id_number += 1
+				else:
+					m3u8.set_edge_id(i, id)
+					m3u8.append_old_edge_id(m3u8.get_edge_id(i))
+
 			m3u8.show()
 		elif input_line == "set":
 			print "set m3u8 to data"
-			# process nodes
-			new_node_id_number = data.get_nodes_count()
-			for i in range(m3u8.get_nodes_count()):
-				m = re.search("\d+", m3u8.get_node_id(i))
-				#if m3u8.get_node_id(i) == "none":
-				if m.group() >= new_node_id_number:
-					posx = random.uniform(-1,1)
-					posy = random.uniform(-1,1)
-					size = 1
-					color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
-					data.create_new_node(color, m3u8.get_node_label(i), posy, posx, m3u8.get_node_id(i), size)
-				else:
-					data.set_node_size_with_id(m3u8.get_node_id(i), data.get_node_size_with_id(m3u8.get_node_id(i)) + 1)
-			# process edges
-			new_edge_id_number = data.get_edges_count()
-			for i in range(m3u8.get_edges_count()): 
-				if m3u8.get_edge_id(i) == "none":
-					color = "rgb(128, 128, 128)"
-					id = "e"+str(new_edge_id_number)
-					data.create_new_edge(color, m3u8.get_edge_source(i), id, m3u8.get_edge_target(i))
-					new_edge_id_number += 1
+			for i in range(m3u8.get_new_node_ids_count()):
+				posx = random.uniform(-1,1)
+				posy = random.uniform(-1,1)
+				size = 1
+				color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
+				data.create_new_node(color, m3u8.get_node_label(i), posy, posx, m3u8.get_new_node_id(i), size)
+			for i in range(m3u8.get_old_node_ids_count()):
+				data.set_node_size_with_id(m3u8.get_node_id(i), data.get_node_size_with_id(m3u8.get_old_node_id(i)) + 1)
+			for i in range(m3u8.get_new_edge_ids_count()):
+				color = "rgb(128, 128, 128)"
+				data.create_new_edge(color, m3u8.get_edge_source(i), m3u8.get_new_edge_id(i), m3u8.get_edge_target(i))
+			for i in range(m3u8.get_old_edge_ids_count()):
+				pass
 			data.show()
 		elif input_line == "commit":
 			f = open ("data.json", "w")
@@ -317,6 +362,16 @@ if __name__ == "__main__":
 			data.show()
 		elif input_line == "show":
 			data.show()
+		elif input_line == "shuffle":
+			for i in range(data.get_nodes_count()):
+				data.set_node_x(i, random.uniform(-1,1))
+				data.set_node_y(i, random.uniform(-1,1))
+		elif input_line == "testpos":
+			posx = 0
+			posy = 0
+			for i in range(data.get_nodes_count()):
+				data.set_node_x(i, random.uniform(-1,1))
+				data.set_node_y(i, random.uniform(-1,1))
 		else:
 			print "again"
 
