@@ -12,11 +12,6 @@ class DataClass:
 		self.__file = ""
 		self.__data = ""
 
-	def load_json(self, file):
-		f = open(file, "r")
-		self.__data = json.load(f)
-		f.close()
-	
 	def show(self):
 		print json.dumps(self.__data, indent = 4)
 	
@@ -142,8 +137,14 @@ class DataClass:
 	def del_edge_with_id(self, id):
 		self.del_edge(self.get_edge_index_with_id(id))
 
+class JsonDataClass(DataClass):
+	def __init__(self, file):
+		DataClass.__init__(self)
+		f = open(file, "r")
+		DataClass.set_data(self, json.load(f))
+		f.close()
 		
-class M3u8Class(DataClass):
+class M3u8DataClass(DataClass):
 	def __init__(self):
 		DataClass.__init__(self)
 		DataClass.set_data(self, {"nodes":[], "edges":[]})
@@ -156,7 +157,6 @@ class M3u8Class(DataClass):
 	def load_m3u8(self, file):
 		print "loading",file, "..."
 		f = open(file, "r")
-		labels = []
 		#self.__data = {"nodes":[], "edges":[]}
 		for line in f:
 			if re.match("#EXTINF",line):
@@ -232,9 +232,7 @@ def mixplaylist(pl1, pl2):
 if __name__ == "__main__":
 
 	# load json data
-	data = DataClass()
-	data.load_json("data.json")
-	m3u8 = ""
+	data = JsonDataClass("data.json")
 
 	while 1:
 		print "type command..."
@@ -256,7 +254,7 @@ if __name__ == "__main__":
 			print "select m3u8 file..."
 			input_file = raw_input()
 			#input_file = "test.m3u8"
-			m3u8 = M3u8Class()
+			m3u8 = M3u8DataClass()
 			m3u8.load_m3u8(input_file)
 			for i in range(m3u8.get_m3u8_labels_count()):
 				print m3u8.get_m3u8_label(i)
