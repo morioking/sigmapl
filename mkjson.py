@@ -6,6 +6,7 @@ import json
 import re
 import copy
 import random
+import math
 
 class DataClass:
 	def __init__(self):
@@ -39,6 +40,9 @@ class DataClass:
 	def get_node_label(self, i):
 		return self.__data["nodes"][i]["label"]
 	
+	def get_node_label_with_id(self, id):
+		return self.get_node_label(self.get_node_index_with_id(id))
+
 	def get_node_id_with_label(self, label):
 		id = "none"
 		for i in range(len(self.__data["nodes"])):
@@ -334,18 +338,27 @@ if __name__ == "__main__":
 
 			m3u8.show()
 		elif input_line == "set":
+			#import pdb; pdb.set_trace()
 			print "set m3u8 to data"
+			print "new node count", m3u8.get_new_node_ids_count()
 			for i in range(m3u8.get_new_node_ids_count()):
+				print "new node id", m3u8.get_new_node_id(i)
 				posx = random.uniform(-1,1)
 				posy = random.uniform(-1,1)
 				size = 1
+				id = m3u8.get_new_node_id(i)
+				label = m3u8.get_node_label_with_id(id)
 				color = "rgb("+str(random.randint(0,255))+","+str(random.randint(0,255))+","+str(random.randint(0,255))+")"
-				data.create_new_node(color, m3u8.get_node_label(i), posy, posx, m3u8.get_new_node_id(i), size)
+				data.create_new_node(color, label, posy, posx, id, size)
+
 			for i in range(m3u8.get_old_node_ids_count()):
-				data.set_node_size_with_id(m3u8.get_node_id(i), data.get_node_size_with_id(m3u8.get_old_node_id(i)) + 1)
+				print "old node id", m3u8.get_old_node_id(i)
+				data.set_node_size_with_id(m3u8.get_old_node_id(i), data.get_node_size_with_id(m3u8.get_old_node_id(i)) + 1)
+
 			for i in range(m3u8.get_new_edge_ids_count()):
 				color = "rgb(128, 128, 128)"
 				data.create_new_edge(color, m3u8.get_edge_source(i), m3u8.get_new_edge_id(i), m3u8.get_edge_target(i))
+
 			for i in range(m3u8.get_old_edge_ids_count()):
 				pass
 			data.show()
@@ -366,12 +379,19 @@ if __name__ == "__main__":
 			for i in range(data.get_nodes_count()):
 				data.set_node_x(i, random.uniform(-1,1))
 				data.set_node_y(i, random.uniform(-1,1))
-		elif input_line == "testpos":
-			posx = 0
-			posy = 0
+		elif input_line == "circle":
 			for i in range(data.get_nodes_count()):
-				data.set_node_x(i, random.uniform(-1,1))
-				data.set_node_y(i, random.uniform(-1,1))
+				data.set_node_x(i, math.cos((2 * math.pi * i)/data.get_nodes_count()))
+				data.set_node_y(i, math.sin((2 * math.pi * i)/data.get_nodes_count()))
+		elif input_line == "testpos":
+			x = random.uniform(-1,1)
+			y = random.uniform(-1,1)
+			for i in range(data.get_nodes_count()):
+				rad = random.uniform(0, 2 * math.pi)
+				x = x + 0.3 * math.cos(rad)
+				y = y + 0.3 * math.sin(rad)
+				data.set_node_x(i, x)
+				data.set_node_y(i, y) 
 		else:
 			print "again"
 
